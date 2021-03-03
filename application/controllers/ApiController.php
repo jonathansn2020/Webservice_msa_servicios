@@ -4,7 +4,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 require_once './php-jwt-master/src/JWT.php';
 use Firebase\JWT\JWT;
 
-
 class ApiController extends CI_Controller{
 
     public function __construct(){
@@ -15,11 +14,7 @@ class ApiController extends CI_Controller{
 
     public function LoginUsuarios(){
 
-        header("Access-Control-Allow-Origin: *");
-        header("Content-Type: application/json; charset=UTF-8");
-        header("Access-Control-Allow-Methods: POST");
-        header("Access-Control-Max-Age: 3600");
-        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+        header("Content-Type: application/json; charset=UTF-8");        
 
         $data = file_get_contents('php://input');
         $json_data_usuario = json_decode($data, true);
@@ -45,7 +40,7 @@ class ApiController extends CI_Controller{
 
                     $jwt = JWT::encode($payload, $key);
                     //$data = JWT::decode($jwt, $key, array('HS256'));
-
+                    header("Authorization: " . $jwt);
                     echo json_encode(array("message" => "ACCESO CORRECTO","token" => $jwt));
                 }
                 else{
