@@ -140,64 +140,18 @@ class ApiController extends CI_Controller{
                         $mensaje_errores[$contador] = 'El código de la sede origen número '.($i+1).' es obligatorio';
                     }
 
-                    if(empty($json_data[$i]['direcorigen'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'La dirección de origen número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['distritorigen'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El distrito de origen número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['ubigeorigen'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El ubigeo origen número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['codzonaorigen'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El código de zona de origen número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['atencionorigen'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'La atención de origen número '.($i+1).' es obligatorio';
-                    }
-
                     if(empty($json_data[$i]['sededestino'])){
                         $contador++;
                         $mensaje_errores[$contador] = 'El código de la sede destino número '.($i+1).' es obligatorio';
                     }
 
-                    if(empty($json_data[$i]['direcdestino'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'La dirección de destino número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['distritodestino'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El distrito de destino número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['ubigeodestino'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El ubigeo destino número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['codzonadestino'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'El código de zona de destino número '.($i+1).' es obligatorio';
-                    }
-
-                    if(empty($json_data[$i]['atenciondestino'])){
-                        $contador++;
-                        $mensaje_errores[$contador] = 'La atención de destino número '.($i+1).' es obligatorio';
-                    }
-
                     if(empty($json_data[$i]['descripcionproducto'])){
                         $contador++;
                         $mensaje_errores[$contador] = 'La descripción del producto número '.($i+1).' es obligatorio';
+                    }
+                    if(empty($json_data[$i]['codigoconductor'])){
+                        $contador++;
+                        $mensaje_errores[$contador] = 'El código de conductor número '.($i+1).' es obligatorio';
                     }
 
                     if(count($mensaje_errores) == 0){
@@ -210,20 +164,12 @@ class ApiController extends CI_Controller{
 
                             $servicios_data = array(
                                 'SRV_Orden_servicio'                 => $json_data[$i]['codpedido'],
+                                'SRV_Fecha_registro'                 => $json_data[$i]['fecregistro'],
+                                'SRV_Hora_registro'                  => $json_data[$i]['horaregistro'],
                                 'SRV_Fec_entrega_solicitada'         => $json_data[$i]['fecentregasolicitada'],
                                 'SRV_Hora_entrega_solicitada'        => $json_data[$i]['horaentregasolicitada'],
                                 'SRV_Sede_origen'                    => $json_data[$i]['sedeorigen'],
-                                'SRV_Direccion_origen'               => $json_data[$i]['direcorigen'],
-                                'SRV_Distrito_origen'                => $json_data[$i]['distritorigen'],
-                                'SRV_Ubigeo_origen'                  => $json_data[$i]['ubigeorigen'],
-                                'SRV_Codigo_zona_origen'             => $json_data[$i]['codzonaorigen'],
-                                'SRV_Atencion_origen'                => $json_data[$i]['atencionorigen'],
                                 'SRV_Sede_destino'                   => $json_data[$i]['sededestino'],
-                                'SRV_Direccion_destino'              => $json_data[$i]['direcdestino'],
-                                'SRV_Distrito_destino'               => $json_data[$i]['distritodestino'],
-                                'SRV_Ubigeo_destino'                 => $json_data[$i]['ubigeodestino'],
-                                'SRV_Codigo_zona_destino'            => $json_data[$i]['codzonadestino'],
-                                'SRV_Atencion_destino'               => $json_data[$i]['atenciondestino'],
                                 'SRV_Descripcion_producto'           => $json_data[$i]['descripcionproducto'],
                                 'SRV_Actualizado_por'                => $nombre_cliente,
                                 'SRV_Fecha_actualizado'              => $fecha_actualizar,
