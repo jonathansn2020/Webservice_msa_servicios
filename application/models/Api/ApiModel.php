@@ -58,4 +58,15 @@ class ApiModel extends CI_Model{
         return $resultado->row();
 
     }
+
+    public function GET_Ubicacion_Zonas($id_depa, $id_prov, $id_dist){
+
+        $this->db->select('UBG_Zona_ecommerce, UBG_Zona_guiada');
+        $this->db->from('ms_ubigeo');
+        $this->db->where("UBG_Departamento=$id_depa AND UBG_Provincia=$id_prov AND UBG_Distrito=$id_dist");
+        $this->db->order_by('UBG_Descripcion', 'ASC');
+        $resultado = $this->db->get();
+
+        return $resultado->row();
+    }
 }
