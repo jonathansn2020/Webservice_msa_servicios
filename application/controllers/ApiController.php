@@ -14,7 +14,7 @@ class ApiController extends CI_Controller{
 
     public function LoginUsuarios(){
 
-        header("Content-Type: application/json; charset=UTF-8");        
+        header("Content-Type: application/json; charset=UTF-8");
 
         $data = file_get_contents('php://input');
         $json_data_usuario = json_decode($data, true);
@@ -39,7 +39,6 @@ class ApiController extends CI_Controller{
                     );
 
                     $jwt = JWT::encode($payload, $key);
-                    //$data = JWT::decode($jwt, $key, array('HS256'));
                     header("Authorization: " . $jwt);
                     echo json_encode(array("message" => "ACCESO CORRECTO","token" => $jwt));
                 }
@@ -59,37 +58,7 @@ class ApiController extends CI_Controller{
 
     }
 
-    function getAuthorizationHeader(){
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER["Authorization"]);
-        }
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            }
-        }
-        return $headers;
-    }
-
-    function getBearerToken() {
-        $headers = $this->getAuthorizationHeader();
-        // HEADER: Get the access token from the header
-        if (!empty($headers)) {
-            if (preg_match('/Bearer\s(\S+)/', $headers, $matches)) {
-                return $matches[1];
-            }
-        }
-        return null;
-    }
-
     public function ApiCargarServicios(){
-
 
         header("Content-Type: application/json; charset=UTF-8");
         header("Access-Control-Allow-Methods: POST");
@@ -100,9 +69,10 @@ class ApiController extends CI_Controller{
 
         $data = file_get_contents('php://input');
         $json_data = json_decode($data, true);
-        $token = $this->getBearerToken();
+        $headers = getallheaders();
 
-        if($token){
+        if(isset($headers['Authorization'])){
+            //$datatoken = JWT::decode($jwt, $key, array('HS256'));
             if(count($json_data) > 0){
                 for($i = 0;$i < count($json_data); $i++){
                     $mensaje_errores = [];
@@ -316,7 +286,7 @@ class ApiController extends CI_Controller{
             echo json_encode(array("message" => "NO PUEDE ACCEDER AL RECURSO DEL MSA_SERVICIO"));
         }
 
-       }
+     }
 
 
 }
