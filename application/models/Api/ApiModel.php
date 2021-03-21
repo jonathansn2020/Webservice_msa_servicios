@@ -69,4 +69,68 @@ class ApiModel extends CI_Model{
 
         return $resultado->row();
     }
+
+    public function BuscarPersonalxZonaAsignado($codigoespzona){
+
+        $sql = $this->db->query("SELECT TB_Valor_alfa1 FROM ms_tabla WHERE TB_Codigo_especifico = '$codigoespzona'");
+
+        $resultado = $sql->row();
+
+        return $resultado->TB_Valor_alfa1;
+
+    }
+
+    public function BuscarDatosConductorAsignadoServ($idpers){
+        $sql = $this->db->query("SELECT p.PRS_Cod_personal, v.VEH_Placa
+                                FROM ms_personal p INNER JOIN ms_vehiculos v
+                                ON v.PRS_Cod_personal = p.PRS_Cod_personal
+                                AND p.PRS_Cod_personal ='$idpers'");
+
+        $resultado = $sql->row();
+        return $resultado;
+    }
+
+    public function listarDatosdeUbigeo($ubigeo){
+      $sql = $this->db->query("SELECT UBG_Zona_ecommerce, UBG_Zona_guiada, UBG_Departamento,
+         UBG_Provincia, UBG_Distrito, UBG_Descripcion, UBG_Cod_ubigeo, UBG_Codigo_postal FROM ms_ubigeo WHERE UBG_Cod_ubigeo='$ubigeo'");
+      $distrito = $sql->row();
+      return $distrito;
+    }
+
+    public function CodigoUbicacion($codigo){
+        $sql = $this->db->query("SELECT SD_Codigo_sede FROM ms_sedes WHERE SD_Codigo_sede = '$codigo'");
+        $resultado = $sql->row();
+        if(isset($resultado->SD_Codigo_sede)){
+          return $resultado->SD_Codigo_sede;
+        }
+    }
+
+    public function CorrelativoUbicacion($codigo){
+        $sql = $this->db->query("SELECT CONCAT(LPAD((MAX(SUBSTRING(SD_Codigo_sede,5))+1),3,'0')) as 'codigo' FROM ms_sedes WHERE SD_Codigo_sede LIKE '$codigo%'");
+        $correlativo = $sql->row();
+        if(isset($correlativo->codigo)){
+          return $correlativo->codigo;
+        }
+    }
+
+    public function listarDistritos($idep, $idpro){
+
+        $this->db->select();
+        $this->db->from('ms_ubigeo');
+        $this->db->where("UBG_Departamento=$idep AND UBG_Provincia=$idpro");
+        $this->db->order_by('UBG_Descripcion', 'ASC');
+        $resultado = $this->db->get();
+
+        return $resultado->result();
+
+    }
+
+    public function InsertarSedesCliente($datasd){
+
+        $this->db->insert('ms_sedes', $datasd);
+        return $this->db->insert_id();
+
+    }
+
+
 }
