@@ -313,9 +313,9 @@ class ApiController extends CI_Controller{
                               $datadestino1 = $this->ApiModel->listarDatosdeUbigeo($json_data[$i]['ubigeo_destino']);
                               $distrito_destino1 = $datadestino1->UBG_Distrito;
 
-                              $via_o = "JR.";
-                              $nombrevia_o = "Ancash";
-                              $numerovia_o = "1201";
+                              $via_o = strtoupper(rtrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],'.',-5),4)));
+                              $nombrevia_o = strtoupper(rtrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],' ',0))));
+                              $numerovia_o = strtoupper(ltrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],' ',10))));
                               $departamento_o = $dataorigen1->UBG_Departamento;
                               $provincia_o = $dataorigen1->UBG_Provincia;
                               $distrito_o = $dataorigen1->UBG_Distrito;
@@ -325,9 +325,9 @@ class ApiController extends CI_Controller{
                               $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
                               $nombre_cliente, $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
 
-                              $via_d = "AV.";
-                              $nombrevia_d = "San martín";
-                              $numerovia_d = "302";
+                              $via_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],'.',-5),4)));
+                              $nombrevia_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',0))));
+                              $numerovia_d = strtoupper(ltrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',10))));
                               $departamento_d = $datadestino1->UBG_Departamento;
                               $provincia_d = $datadestino1->UBG_Provincia;
                               $distrito_d = $datadestino1->UBG_Distrito;
@@ -336,7 +336,7 @@ class ApiController extends CI_Controller{
 
                               $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
                               $nombre_cliente, $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
-                              
+
                               $tipo_orden1 = "ECOM";
                               $zona_origen1 = "";
                               $zona_destino1 = "";
@@ -423,6 +423,252 @@ class ApiController extends CI_Controller{
                               echo json_encode(array("mensaje" => "LOS DATOS DEL SERVICIO {$data_servicios['SRV_Orden_servicio']} FUERON INSERTADOS CORRECTAMENTE EL {$fecha_creacion} A LAS {$horario_creado}"));
 
                             }
+
+                            if(!empty($json_data[$i]['origen']) && empty($json_data[$i]['destino'])){
+
+                              $fecha_creacion = date("Y-m-d");
+                              $hora_creacion = date("H:i:s");
+
+                              $datosede_origen   = $this->ApiModel->GET_Sedes($json_data[$i]['origen']);
+
+                              $data_sedeorigen = [
+                                  "SD_Direccion_origen"               =>  $datosede_origen->SD_Tipo_via.' '.$datosede_origen->SD_Nombre_via.' '.$datosede_origen->SD_Numero,
+                                  "SD_Departamento_origen"            =>  $datosede_origen->SD_Departamento,
+                                  "SD_Provincia_origen"               =>  $datosede_origen->SD_Provincia,
+                                  "SD_Distrito_origen"                =>  $datosede_origen->SD_Distrito,
+                                  "SD_Codigo_ubigeo_origen"           =>  $datosede_origen->SD_Codigo_ubigeo,
+                                  "SD_Responsable_origen"             =>  $datosede_origen->SD_Responsable
+                              ];
+
+                              $listadozonas_origen = $this->ApiModel->GET_Ubicacion_Zonas($data_sedeorigen['SD_Departamento_origen'], $data_sedeorigen['SD_Provincia_origen'], $data_sedeorigen['SD_Distrito_origen']);
+
+                              $distrito_destino = "";
+
+                              $datadestino = $this->ApiModel->listarDatosdeUbigeo($json_data[$i]['ubigeo_destino']);
+                              $distrito_destino = $datadestino1->UBG_Distrito;
+
+                              $via_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],'.',-5),4)));
+                              $nombrevia_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',0))));
+                              $numerovia_d = strtoupper(ltrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',10))));
+                              $departamento_d = $datadestino1->UBG_Departamento;
+                              $provincia_d = $datadestino1->UBG_Provincia;
+                              $distrito_d = $datadestino1->UBG_Distrito;
+                              $ubigeo_d = $datadestino1->UBG_Cod_ubigeo;
+                              $postal_d = $datadestino1->UBG_Codigo_postal;
+
+                              $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
+                              $nombre_cliente, $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
+
+                              $tipo_orden = "ECOM";
+                              $zona_origen = "";
+                              $zona_destino = "";
+                              $zonaecom_origen    = $listadozonas_origen->UBG_Zona_ecommerce;
+                              $zonaecom_destino   = $datadestino->UBG_Zona_ecommerce;
+
+                              if($tipo_orden1 == "ECOM"){
+                                  if($zonaecom_origen == ""){
+                                      $zona_origen = "E99";
+                                  }
+                                  else{
+                                      $zona_origen = $listadozonas_origen->UBG_Zona_ecommerce;
+                                  }
+                                  if($zonaecom_destino == ""){
+                                      $zona_destino = "E99";
+                                  }
+                                  else{
+                                      $zona_destino  = $datadestino->UBG_Zona_ecommerce;
+                                  }
+                              }
+
+                              $codigo_personal = "";
+                              $placa_vehiculo = "";
+
+                              if($zona_destino != "E99"){
+                                $codigopers = $this->ApiModel->BuscarPersonalxZonaAsignado($zona_destino);
+                                $conductor_asignado = $this->ApiModel->BuscarDatosConductorAsignadoServ($codigopers);
+
+                                if(isset($conductor_asignado->PRS_Cod_personal) && isset($conductor_asignado->VEH_Placa)){
+                                  $codigo_personal = $conductor_asignado->PRS_Cod_personal;
+                                  $placa_vehiculo  = $conductor_asignado->VEH_Placa;
+                                }
+                                else{
+                                  $codigo_personal = "PE0007";
+                                  $placa_vehiculo = "";
+                                }
+                              }
+
+                              $data_servicios = array(
+                                  'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
+                                  'CLI_Cod_cliente'                    => $json_data[$i]['codigo_cliente'],
+                                  'SRV_Tipo_orden'                     => "ECOM",
+                                  'SRV_Fecha_registro'                 => $json_data[$i]['fecha_registro'],
+                                  'SRV_Hora_registro'                  => $json_data[$i]['hora_registro'],
+                                  'SRV_Fec_entrega_solicitada'         => $json_data[$i]['fecha_solicitada'],
+                                  'SRV_Hora_entrega_solicitada'        => $json_data[$i]['hora_solicitada'],
+                                  'SRV_Fecha_entrega'                  => "0000-00-00",
+                                  'SRV_Hora_entrega'                   => "0000-00-00",
+                                  'SRV_Estado_pedido'                  => "01",
+                                  'SRV_Sede_origen'                    => $json_data[$i]['origen'],
+                                  'SRV_Direccion_origen'               => $data_sedeorigen['SD_Direccion_origen'],
+                                  'SRV_Distrito_origen'                => $data_sedeorigen['SD_Distrito_origen'],
+                                  'SRV_Ubigeo_origen'                  => $data_sedeorigen['SD_Codigo_ubigeo_origen'],
+                                  'SRV_Codigo_zona_origen'             => $zona_origen,
+                                  'SRV_Atencion_origen'                => $data_sedeorigen['SD_Responsable_origen'],
+                                  'SRV_Sede_destino'                   => $correlativo_destino,
+                                  'SRV_Direccion_destino'              => $json_data[$i]['direccion_destino'],
+                                  'SRV_Distrito_destino'               => $distrito_destino,
+                                  'SRV_Ubigeo_destino'                 => $json_data[$i]['ubigeo_destino'],
+                                  'SRV_Codigo_zona_destino'            => $zona_destino,
+                                  'SRV_Atencion_destino'               => $json_data[$i]['atencion_destino'],
+                                  'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
+                                  'SRV_Codigo_conductor'               => $codigo_personal,
+                                  'SRV_Placa'                          => $placa_vehiculo,
+                                  'SRV_Creado_por'                     => $nombre_cliente,
+                                  'SRV_Fecha_creacion'                 => $fecha_creacion,
+                                  'SRV_Hora_creacion'                  => $hora_creacion,
+                                  'SRV_Actualizado_por'                => $nombre_cliente,
+                                  'SRV_Fecha_actualizado'              => $fecha_creacion,
+                                  'SRV_Hora_actualizacion'             => $hora_creacion
+                              );
+
+                              $horaria = "";
+                              if($hora_creacion >= 12){
+                                $horaria = " PM";
+                                $horario_creado = $hora_creacion.$horaria;
+                              }
+                              else{
+                                $horaria = " AM";
+                                $horario_creado = $hora_creacion.$horaria;
+                              }
+
+                              $this->ApiModel->POST_Carga_servicios($data_servicios);
+                              $fecha_creacion = date("d-m-Y", strtotime($fecha_creacion));
+                              echo json_encode(array("mensaje" => "LOS DATOS DEL SERVICIO {$data_servicios['SRV_Orden_servicio']} FUERON INSERTADOS CORRECTAMENTE EL {$fecha_creacion} A LAS {$horario_creado}"));
+
+                            }
+
+                            if(empty($json_data[$i]['origen']) && !empty($json_data[$i]['destino'])){
+
+                              $fecha_creacion = date("Y-m-d");
+                              $hora_creacion = date("H:i:s");
+
+                              $distrito_origen = "";
+
+                              $dataorigen = $this->ApiModel->listarDatosdeUbigeo($json_data[$i]['ubigeo_origen']);
+                              $distrito_origen = $dataorigen->UBG_Distrito;
+
+                              $datosede_destino   = $this->ApiModel->GET_Sedes($json_data[$i]['destino']);
+
+                              $data_sededestino = [
+                                  "SD_Direccion_destino"              =>  $datosede_destino->SD_Tipo_via.' '.$datosede_destino->SD_Nombre_via.' '.$datosede_destino->SD_Numero,
+                                  "SD_Departamento_destino"           =>  $datosede_destino->SD_Departamento,
+                                  "SD_Provincia_destino"              =>  $datosede_destino->SD_Provincia,
+                                  "SD_Distrito_destino"               =>  $datosede_destino->SD_Distrito,
+                                  "SD_Codigo_ubigeo_destino"          =>  $datosede_destino->SD_Codigo_ubigeo,
+                                  "SD_Responsable_destino"            =>  $datosede_destino->SD_Responsable
+                              ];
+
+                              $listadozonas_destino = $this->ApiModel->GET_Ubicacion_Zonas($data_sededestino['SD_Departamento_destino'], $data_sededestino['SD_Provincia_destino'], $data_sededestino['SD_Distrito_destino']);
+
+                              $via_o = strtoupper(rtrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],'.',-5),4)));
+                              $nombrevia_o = strtoupper(rtrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],' ',0))));
+                              $numerovia_o = strtoupper(ltrim(substr($json_data[$i]['direccion_origen'],strpos($json_data[$i]['direccion_origen'],' ',10))));
+                              $departamento_o = $dataorigen->UBG_Departamento;
+                              $provincia_o = $dataorigen->UBG_Provincia;
+                              $distrito_o = $dataorigen->UBG_Distrito;
+                              $ubigeo_o = $dataorigen->UBG_Cod_ubigeo;
+                              $postal_o = $dataorigen->UBG_Codigo_postal;
+
+                              $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
+                              $nombre_cliente, $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
+
+                              $tipo_orden = "ECOM";
+                              $zona_origen = "";
+                              $zona_destino = "";
+                              $zonaecom_origen    = $dataorigen->UBG_Zona_ecommerce;
+                              $zonaecom_destino   = $listadozonas_destino->UBG_Zona_ecommerce;
+
+                              if($tipo_orden == "ECOM"){
+                                  if($zonaecom_origen == ""){
+                                      $zona_origen = "E99";
+                                  }
+                                  else{
+                                      $zona_origen = $dataorigen->UBG_Zona_ecommerce;
+                                  }
+                                  if($zonaecom_destino == ""){
+                                      $zona_destino = "E99";
+                                  }
+                                  else{
+                                      $zona_destino  = $listadozonas_destino->UBG_Zona_ecommerce;
+                                  }
+                              }
+
+                              $codigo_personal = "";
+                              $placa_vehiculo = "";
+
+                              if($zona_destino != "E99"){
+                                $codigopers = $this->ApiModel->BuscarPersonalxZonaAsignado($zona_destino);
+                                $conductor_asignado = $this->ApiModel->BuscarDatosConductorAsignadoServ($codigopers);
+
+                                if(isset($conductor_asignado->PRS_Cod_personal) && isset($conductor_asignado->VEH_Placa)){
+                                  $codigo_personal = $conductor_asignado->PRS_Cod_personal;
+                                  $placa_vehiculo  = $conductor_asignado->VEH_Placa;
+                                }
+                                else{
+                                  $codigo_personal = "PE0007";
+                                  $placa_vehiculo = "";
+                                }
+                              }
+
+                              $data_servicios = array(
+                                  'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
+                                  'CLI_Cod_cliente'                    => $json_data[$i]['codigo_cliente'],
+                                  'SRV_Tipo_orden'                     => "ECOM",
+                                  'SRV_Fecha_registro'                 => $json_data[$i]['fecha_registro'],
+                                  'SRV_Hora_registro'                  => $json_data[$i]['hora_registro'],
+                                  'SRV_Fec_entrega_solicitada'         => $json_data[$i]['fecha_solicitada'],
+                                  'SRV_Hora_entrega_solicitada'        => $json_data[$i]['hora_solicitada'],
+                                  'SRV_Fecha_entrega'                  => "0000-00-00",
+                                  'SRV_Hora_entrega'                   => "0000-00-00",
+                                  'SRV_Estado_pedido'                  => "01",
+                                  'SRV_Sede_origen'                    => $correlativo_origen,
+                                  'SRV_Direccion_origen'               => $json_data[$i]['direccion_origen'],
+                                  'SRV_Distrito_origen'                => $distrito_origen,
+                                  'SRV_Ubigeo_origen'                  => $json_data[$i]['ubigeo_origen'],
+                                  'SRV_Codigo_zona_origen'             => $zona_origen,
+                                  'SRV_Atencion_origen'                => $json_data[$i]['atencion_origen'],
+                                  'SRV_Sede_destino'                   => $json_data[$i]['destino'],
+                                  'SRV_Direccion_destino'              => $data_sededestino['SD_Direccion_destino'],
+                                  'SRV_Distrito_destino'               => $data_sededestino['SD_Distrito_destino'],
+                                  'SRV_Ubigeo_destino'                 => $data_sededestino['SD_Codigo_ubigeo_destino'],
+                                  'SRV_Codigo_zona_destino'            => $zona_destino,
+                                  'SRV_Atencion_destino'               => $data_sededestino['SD_Responsable_destino'],
+                                  'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
+                                  'SRV_Codigo_conductor'               => $codigo_personal,
+                                  'SRV_Placa'                          => $placa_vehiculo,
+                                  'SRV_Creado_por'                     => $nombre_cliente,
+                                  'SRV_Fecha_creacion'                 => $fecha_creacion,
+                                  'SRV_Hora_creacion'                  => $hora_creacion,
+                                  'SRV_Actualizado_por'                => $nombre_cliente,
+                                  'SRV_Fecha_actualizado'              => $fecha_creacion,
+                                  'SRV_Hora_actualizacion'             => $hora_creacion
+                              );
+
+                              $horaria = "";
+                              if($hora_creacion >= 12){
+                                $horaria = " PM";
+                                $horario_creado = $hora_creacion.$horaria;
+                              }
+                              else{
+                                $horaria = " AM";
+                                $horario_creado = $hora_creacion.$horaria;
+                              }
+
+                              $this->ApiModel->POST_Carga_servicios($data_servicios);
+                              $fecha_creacion = date("d-m-Y", strtotime($fecha_creacion));
+                              echo json_encode(array("mensaje" => "LOS DATOS DEL SERVICIO {$data_servicios['SRV_Orden_servicio']} FUERON INSERTADOS CORRECTAMENTE EL {$fecha_creacion} A LAS {$horario_creado}"));
+
+                            }
                         }
 
                     }
@@ -465,6 +711,7 @@ class ApiController extends CI_Controller{
            'SD_Codigo_sede'                     => $codigo,
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
+           'SD_Responsable'                     => "Sin responsable",
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
            'SD_Numero'                          => $numerovia,
@@ -510,6 +757,7 @@ class ApiController extends CI_Controller{
            'SD_Codigo_sede'                     => $codigo,
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
+           'SD_Responsable'                     => "Sin responsable",
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
            'SD_Numero'                          => $numerovia,
