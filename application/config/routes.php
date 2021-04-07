@@ -55,3 +55,4 @@ $route['translate_uri_dashes'] = FALSE;
 
 $route['AccesoApiRest'] = 'ApiController/LoginUsuarios';
 $route['ApiCargarservicios'] = 'ApiController/ApiCargarServicios';
+$route['EstadoPedido/(:any)'] = 'ApiController/ApiEstadoServicio/$1';

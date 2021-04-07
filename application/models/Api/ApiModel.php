@@ -120,17 +120,32 @@ class ApiModel extends CI_Model{
         $this->db->where("UBG_Departamento=$idep AND UBG_Provincia=$idpro");
         $this->db->order_by('UBG_Descripcion', 'ASC');
         $resultado = $this->db->get();
-
         return $resultado->result();
 
     }
-
     public function InsertarSedesCliente($datasd){
 
         $this->db->insert('ms_sedes', $datasd);
         return $this->db->insert_id();
 
     }
+    public function GET_Estado_Pedido($codpedido){
+      $this->db->select("SRV_Orden_servicio, SRV_Estado_pedido");
+      $this->db->from('ms_servicios');
+      $this->db->where("SRV_Orden_servicio", $codpedido);
+      $resultado = $this->db->get();
+      return $resultado->row();
+    }
 
+    public function EstadoOrdenServicio(){
+
+        $this->db->select();
+        $this->db->from('ms_tabla');
+        $this->db->where('TB_Id_tabla=33 AND TB_Codigo_especifico IS NOT NULL');        
+        $resultado = $this->db->get();
+
+        return $resultado->result();
+
+    }
 
 }
