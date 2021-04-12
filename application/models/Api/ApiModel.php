@@ -21,8 +21,16 @@ class ApiModel extends CI_Model{
 
     }
 
-    public function POST_Carga_servicios($data){
+    public function ValidarCodigoServicio($codpedido){
+      $resultado = $this->db->query("SELECT SRV_Orden_servicio FROM ms_servicios WHERE SRV_Orden_servicio='$codpedido'");
+      $row = $resultado->row();
+      if(isset($row->SRV_Orden_servicio)){
+        return $row->SRV_Orden_servicio;
+      }
 
+    }
+
+    public function POST_Carga_servicios($data){
         $this->db->insert($this->table, $data);
         return $this->db->insert_id();
     }
@@ -33,7 +41,6 @@ class ApiModel extends CI_Model{
         if(isset($idservicio->SRV_Orden_servicio)){
             return $idservicio->SRV_Orden_servicio;
         }
-
     }
 
     public function GET_Nombre_corrido_cliente($codcliente){
@@ -42,11 +49,6 @@ class ApiModel extends CI_Model{
         if(isset($nombrecli->CLI_Nombre_corrido)){
             return $nombrecli->CLI_Nombre_corrido;
         }
-    }
-
-    public function PUT_Carga_servicios($orden, $data){
-        $this->db->where($this->table_id, $orden);
-        $this->db->update($this->table, $data);
     }
 
     public function GET_Sedes($idsede){
@@ -141,7 +143,7 @@ class ApiModel extends CI_Model{
 
         $this->db->select();
         $this->db->from('ms_tabla');
-        $this->db->where('TB_Id_tabla=33 AND TB_Codigo_especifico IS NOT NULL');        
+        $this->db->where('TB_Id_tabla=33 AND TB_Codigo_especifico IS NOT NULL');
         $resultado = $this->db->get();
 
         return $resultado->result();
