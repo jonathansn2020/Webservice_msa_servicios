@@ -217,6 +217,10 @@ class ApiController extends CI_Controller{
                               $placa_vehiculo = "";
                             }
                           }
+                          else{
+                            $codigo_personal = "PE0007";
+                            $placa_vehiculo = "";
+                          }
 
                           $data_servicios = array(
                               'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
@@ -340,6 +344,10 @@ class ApiController extends CI_Controller{
                               $codigo_personal = "PE0007";
                               $placa_vehiculo = "";
                             }
+                          }
+                          else{
+                            $codigo_personal = "PE0007";
+                            $placa_vehiculo = "";
                           }
 
                           $data_servicios = array(
@@ -465,6 +473,10 @@ class ApiController extends CI_Controller{
                               $placa_vehiculo = "";
                             }
                           }
+                          else{
+                            $codigo_personal = "PE0007";
+                            $placa_vehiculo = "";
+                          }
 
                           $data_servicios = array(
                               'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
@@ -589,7 +601,11 @@ class ApiController extends CI_Controller{
                               $placa_vehiculo = "";
                             }
                           }
-
+                          else{
+                            $codigo_personal = "PE0007";
+                            $placa_vehiculo = "";
+                          }
+                          
                           $data_servicios = array(
                               'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
                               'CLI_Cod_cliente'                    => $json_data[$i]['codigo_cliente'],
@@ -667,7 +683,7 @@ class ApiController extends CI_Controller{
             echo json_encode(array("message" => "NO CUENTA CON AUTORIZACIÓN PARA ACCEDER AL RECURSO SOLICITADO"));
         }
 
-     }     
+     }
 
      public function ApiEstadoServicio($codpedido){
 
