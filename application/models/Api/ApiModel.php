@@ -27,7 +27,6 @@ class ApiModel extends CI_Model{
       if(isset($row->SRV_Orden_servicio)){
         return $row->SRV_Orden_servicio;
       }
-
     }
 
     public function POST_Carga_servicios($data){
@@ -51,9 +50,17 @@ class ApiModel extends CI_Model{
         }
     }
 
+    public function GET_Email_cliente($codcliente){
+        $sql = $this->db->query("SELECT CLI_Email_principal FROM ms_cliente WHERE CLI_Cod_cliente = '$codcliente'");
+        $emailcli = $sql->row();
+        if(isset($emailcli->CLI_Email_principal)){
+            return $emailcli->CLI_Email_principal;
+        }
+    }
+
     public function GET_Sedes($idsede){
 
-        $this->db->select('SD_Tipo_via,SD_Nombre_via,SD_Numero,SD_Interior,SD_Departamento, SD_Provincia, SD_Distrito,SD_Codigo_ubigeo,SD_Responsable');
+        $this->db->select('SD_Tipo_via,SD_Nombre_via,SD_Numero,SD_Interior,SD_Departamento, SD_Provincia, SD_Distrito,SD_Codigo_ubigeo,SD_Responsable,SD_Telefono1');
         $this->db->from('ms_sedes');
         $this->db->where('SD_Codigo_sede', $idsede);
         $resultado = $this->db->get();

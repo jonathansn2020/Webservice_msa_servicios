@@ -9,6 +9,7 @@ class ApiController extends CI_Controller{
     public function __construct(){
         parent::__construct();
         $this->load->model('Api/ApiModel');
+        $this->load->library('email');
         $this->load->database();
     }
 
@@ -19,7 +20,6 @@ class ApiController extends CI_Controller{
         $data = file_get_contents('php://input');
         $json_data_usuario = json_decode($data, true);
         $datosusu = $this->ApiModel->ValidarUsuario($json_data_usuario['codigousuario']);
-
         if(isset($datosusu)){
             if($datosusu->USU_Cod_usuario == $json_data_usuario['codigousuario'] && password_verify($json_data_usuario['contrasena'], $datosusu->USU_Contrasena)){
                 if($datosusu->USU_Estado == "Activo"){
@@ -37,7 +37,6 @@ class ApiController extends CI_Controller{
                     );
 
                     $jwt = JWT::encode($payload, $key);
-                    header("Authorization", $jwt);
                     echo json_encode(array("message" => "ACCESO CORRECTO", "token" => $jwt));
                 }
                 else{
@@ -102,6 +101,10 @@ class ApiController extends CI_Controller{
                         $contador++;
                         $mensaje_errores[$contador] = 'La fecha de entrega solicitada número '.($i+1).' es obligatorio';
                     }
+                    if(empty($json_data[$i]['centro_costo'])){
+                        $contador++;
+                        $mensaje_errores[$contador] = 'El centro costo número '.($i+1).' es obligatorio';
+                    }
                     if(empty($json_data[$i]['origen'])){
                       if(empty($json_data[$i]['direccion_origen'])){
                         $contador++;
@@ -118,6 +121,10 @@ class ApiController extends CI_Controller{
                       if(empty($json_data[$i]['atencion_origen'])){
                         $contador++;
                         $mensaje_errores[$contador] = 'La atención de origen número '.($i+1).' es obligatorio';
+                      }
+                      if(empty($json_data[$i]['telefono_origen'])){
+                        $contador++;
+                        $mensaje_errores[$contador] = 'El teléfono de origen número '.($i+1).' es obligatorio';
                       }
                     }
                     if(empty($json_data[$i]['destino'])){
@@ -137,12 +144,15 @@ class ApiController extends CI_Controller{
                         $contador++;
                         $mensaje_errores[$contador] = 'La atención de destino número '.($i+1).' es obligatorio';
                       }
+                      if(empty($json_data[$i]['telefono_destino'])){
+                        $contador++;
+                        $mensaje_errores[$contador] = 'El teléfono de destino número '.($i+1).' es obligatorio';
+                      }
                     }
                     if(empty($json_data[$i]['descripcion_producto'])){
                         $contador++;
                         $mensaje_errores[$contador] = 'La descripción del producto número '.($i+1).' es obligatorio';
                     }
-
                     if(count($mensaje_errores) == 0){
                       $orden_existente = $this->ApiModel->ValidarCodigoServicio($json_data[$i]['orden_servicio']);
                       if($orden_existente){
@@ -165,7 +175,8 @@ class ApiController extends CI_Controller{
                               "SD_Provincia_origen"               =>  $datosede_origen->SD_Provincia,
                               "SD_Distrito_origen"                =>  $datosede_origen->SD_Distrito,
                               "SD_Codigo_ubigeo_origen"           =>  $datosede_origen->SD_Codigo_ubigeo,
-                              "SD_Responsable_origen"             =>  $datosede_origen->SD_Responsable
+                              "SD_Responsable_origen"             =>  $datosede_origen->SD_Responsable,
+                              "SD_Telefono1_origen"               =>  $datosede_origen->SD_Telefono1
                           ];
                           $data_sededestino = [
                               "SD_Direccion_destino"              =>  $datosede_destino->SD_Tipo_via.' '.$datosede_destino->SD_Nombre_via.' '.$datosede_destino->SD_Numero,
@@ -173,7 +184,8 @@ class ApiController extends CI_Controller{
                               "SD_Provincia_destino"              =>  $datosede_destino->SD_Provincia,
                               "SD_Distrito_destino"               =>  $datosede_destino->SD_Distrito,
                               "SD_Codigo_ubigeo_destino"          =>  $datosede_destino->SD_Codigo_ubigeo,
-                              "SD_Responsable_destino"            =>  $datosede_destino->SD_Responsable
+                              "SD_Responsable_destino"            =>  $datosede_destino->SD_Responsable,
+                              "SD_Telefono1_destino"              =>  $datosede_destino->SD_Telefono1
                           ];
 
                           $distrito_origen = "";
@@ -233,18 +245,21 @@ class ApiController extends CI_Controller{
                               'SRV_Fecha_entrega'                  => "0000-00-00",
                               'SRV_Hora_entrega'                   => "0000-00-00",
                               'SRV_Estado_pedido'                  => "01",
+                              'SRV_Centro_costo'                   => $json_data[$i]['centro_costo'],
                               'SRV_Sede_origen'                    => $json_data[$i]['origen'],
                               'SRV_Direccion_origen'               => $data_sedeorigen['SD_Direccion_origen'],
                               'SRV_Distrito_origen'                => $data_sedeorigen['SD_Distrito_origen'],
                               'SRV_Ubigeo_origen'                  => $data_sedeorigen['SD_Codigo_ubigeo_origen'],
                               'SRV_Codigo_zona_origen'             => $zona_origen,
                               'SRV_Atencion_origen'                => $data_sedeorigen['SD_Responsable_origen'],
+                              'SRV_Telefono_origen'                => $data_sedeorigen['SD_Telefono1_origen'],
                               'SRV_Sede_destino'                   => $json_data[$i]['destino'],
                               'SRV_Direccion_destino'              => $data_sededestino['SD_Direccion_destino'],
                               'SRV_Distrito_destino'               => $data_sededestino['SD_Distrito_destino'],
                               'SRV_Ubigeo_destino'                 => $data_sededestino['SD_Codigo_ubigeo_destino'],
                               'SRV_Codigo_zona_destino'            => $zona_destino,
                               'SRV_Atencion_destino'               => $data_sededestino['SD_Responsable_destino'],
+                              'SRV_Telefono_destino'               => $data_sededestino['SD_Telefono1_destino'],
                               'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
                               'SRV_Codigo_conductor'               => $codigo_personal,
                               'SRV_Placa'                          => $placa_vehiculo,
@@ -295,7 +310,7 @@ class ApiController extends CI_Controller{
                           $postal_o = $dataorigen1->UBG_Codigo_postal;
 
                           $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
+                          $nombre_cliente, $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
 
                           $via_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],'.',-5),4)));
                           $nombrevia_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',0))));
@@ -307,7 +322,7 @@ class ApiController extends CI_Controller{
                           $postal_d = $datadestino1->UBG_Codigo_postal;
 
                           $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
+                          $nombre_cliente, $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
 
                           $tipo_orden1 = "ECOM";
                           $zona_origen1 = "";
@@ -361,18 +376,21 @@ class ApiController extends CI_Controller{
                               'SRV_Fecha_entrega'                  => "0000-00-00",
                               'SRV_Hora_entrega'                   => "0000-00-00",
                               'SRV_Estado_pedido'                  => "01",
+                              'SRV_Centro_costo'                   => $json_data[$i]['centro_costo'],
                               'SRV_Sede_origen'                    => $correlativo_origen,
                               'SRV_Direccion_origen'               => $json_data[$i]['direccion_origen'],
                               'SRV_Distrito_origen'                => $distrito_origen1,
                               'SRV_Ubigeo_origen'                  => $json_data[$i]['ubigeo_origen'],
                               'SRV_Codigo_zona_origen'             => $zona_origen1,
                               'SRV_Atencion_origen'                => $json_data[$i]['atencion_origen'],
+                              'SRV_Telefono_origen'                => $json_data[$i]['telefono_origen'],
                               'SRV_Sede_destino'                   => $correlativo_destino,
                               'SRV_Direccion_destino'              => $json_data[$i]['direccion_destino'],
                               'SRV_Distrito_destino'               => $distrito_destino1,
                               'SRV_Ubigeo_destino'                 => $json_data[$i]['ubigeo_destino'],
                               'SRV_Codigo_zona_destino'            => $zona_destino1,
                               'SRV_Atencion_destino'               => $json_data[$i]['atencion_destino'],
+                              'SRV_Telefono_destino'               => $json_data[$i]['telefono_destino'],
                               'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
                               'SRV_Codigo_conductor'               => $codigo_personal,
                               'SRV_Placa'                          => $placa_vehiculo,
@@ -414,7 +432,8 @@ class ApiController extends CI_Controller{
                               "SD_Provincia_origen"               =>  $datosede_origen->SD_Provincia,
                               "SD_Distrito_origen"                =>  $datosede_origen->SD_Distrito,
                               "SD_Codigo_ubigeo_origen"           =>  $datosede_origen->SD_Codigo_ubigeo,
-                              "SD_Responsable_origen"             =>  $datosede_origen->SD_Responsable
+                              "SD_Responsable_origen"             =>  $datosede_origen->SD_Responsable,
+                              "SD_Telefono1_origen"               =>  $datosede_origen->SD_Telefono1
                           ];
 
                           $listadozonas_origen = $this->ApiModel->GET_Ubicacion_Zonas($data_sedeorigen['SD_Departamento_origen'], $data_sedeorigen['SD_Provincia_origen'], $data_sedeorigen['SD_Distrito_origen']);
@@ -434,7 +453,7 @@ class ApiController extends CI_Controller{
                           $postal_d = $datadestino1->UBG_Codigo_postal;
 
                           $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
+                          $nombre_cliente, $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
 
                           $tipo_orden = "ECOM";
                           $zona_origen = "";
@@ -489,18 +508,21 @@ class ApiController extends CI_Controller{
                               'SRV_Fecha_entrega'                  => "0000-00-00",
                               'SRV_Hora_entrega'                   => "0000-00-00",
                               'SRV_Estado_pedido'                  => "01",
+                              'SRV_Centro_costo'                   => $json_data[$i]['centro_costo'],
                               'SRV_Sede_origen'                    => $json_data[$i]['origen'],
                               'SRV_Direccion_origen'               => $data_sedeorigen['SD_Direccion_origen'],
                               'SRV_Distrito_origen'                => $data_sedeorigen['SD_Distrito_origen'],
                               'SRV_Ubigeo_origen'                  => $data_sedeorigen['SD_Codigo_ubigeo_origen'],
                               'SRV_Codigo_zona_origen'             => $zona_origen,
                               'SRV_Atencion_origen'                => $data_sedeorigen['SD_Responsable_origen'],
+                              'SRV_Telefono_origen'                => $data_sedeorigen['SD_Telefono1_origen'],
                               'SRV_Sede_destino'                   => $correlativo_destino,
                               'SRV_Direccion_destino'              => $json_data[$i]['direccion_destino'],
                               'SRV_Distrito_destino'               => $distrito_destino,
                               'SRV_Ubigeo_destino'                 => $json_data[$i]['ubigeo_destino'],
                               'SRV_Codigo_zona_destino'            => $zona_destino,
                               'SRV_Atencion_destino'               => $json_data[$i]['atencion_destino'],
+                              'SRV_Telefono_destino'               => $json_data[$i]['telefono_destino'],
                               'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
                               'SRV_Codigo_conductor'               => $codigo_personal,
                               'SRV_Placa'                          => $placa_vehiculo,
@@ -547,7 +569,8 @@ class ApiController extends CI_Controller{
                               "SD_Provincia_destino"              =>  $datosede_destino->SD_Provincia,
                               "SD_Distrito_destino"               =>  $datosede_destino->SD_Distrito,
                               "SD_Codigo_ubigeo_destino"          =>  $datosede_destino->SD_Codigo_ubigeo,
-                              "SD_Responsable_destino"            =>  $datosede_destino->SD_Responsable
+                              "SD_Responsable_destino"            =>  $datosede_destino->SD_Responsable,
+                              "SD_Telefono_destino"               =>  $datosede_destino->SD_Telefono1,
                           ];
 
                           $listadozonas_destino = $this->ApiModel->GET_Ubicacion_Zonas($data_sededestino['SD_Departamento_destino'], $data_sededestino['SD_Provincia_destino'], $data_sededestino['SD_Distrito_destino']);
@@ -562,7 +585,7 @@ class ApiController extends CI_Controller{
                           $postal_o = $dataorigen->UBG_Codigo_postal;
 
                           $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
+                          $nombre_cliente, $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
 
                           $tipo_orden = "ECOM";
                           $zona_origen = "";
@@ -605,7 +628,7 @@ class ApiController extends CI_Controller{
                             $codigo_personal = "PE0007";
                             $placa_vehiculo = "";
                           }
-                          
+
                           $data_servicios = array(
                               'SRV_Orden_servicio'                 => $json_data[$i]['orden_servicio'],
                               'CLI_Cod_cliente'                    => $json_data[$i]['codigo_cliente'],
@@ -617,18 +640,21 @@ class ApiController extends CI_Controller{
                               'SRV_Fecha_entrega'                  => "0000-00-00",
                               'SRV_Hora_entrega'                   => "0000-00-00",
                               'SRV_Estado_pedido'                  => "01",
+                              'SRV_Centro_costo'                   => $json_data[$i]['centro_costo'],
                               'SRV_Sede_origen'                    => $correlativo_origen,
                               'SRV_Direccion_origen'               => $json_data[$i]['direccion_origen'],
                               'SRV_Distrito_origen'                => $distrito_origen,
                               'SRV_Ubigeo_origen'                  => $json_data[$i]['ubigeo_origen'],
                               'SRV_Codigo_zona_origen'             => $zona_origen,
                               'SRV_Atencion_origen'                => $json_data[$i]['atencion_origen'],
+                              'SRV_Telefono_origen'                => $json_data[$i]['telefono_origen'],
                               'SRV_Sede_destino'                   => $json_data[$i]['destino'],
                               'SRV_Direccion_destino'              => $data_sededestino['SD_Direccion_destino'],
                               'SRV_Distrito_destino'               => $data_sededestino['SD_Distrito_destino'],
                               'SRV_Ubigeo_destino'                 => $data_sededestino['SD_Codigo_ubigeo_destino'],
                               'SRV_Codigo_zona_destino'            => $zona_destino,
                               'SRV_Atencion_destino'               => $data_sededestino['SD_Responsable_destino'],
+                              'SRV_Telefono_destino'               => $data_sededestino['SD_Telefono_destino'],
                               'SRV_Descripcion_producto'           => $json_data[$i]['descripcion_producto'],
                               'SRV_Codigo_conductor'               => $codigo_personal,
                               'SRV_Placa'                          => $placa_vehiculo,
@@ -674,6 +700,11 @@ class ApiController extends CI_Controller{
                   $mensaje = "Ninguna observación de datos ya existentes.";
                 }
                 echo json_encode(array("mensaje" => $mensaje, "error" => $error, "data" => $data));
+
+                if(count($datos_cargados) > 0){
+                  $this->EnviarCorreoPedidosCargados($json_data[0]["codigo_cliente"], count($datos_cargados));
+                }
+
             }
             else{
                 echo json_encode(array('error' => "ERROR AL LLAMAR AL API, NO HAY DATOS DE SERVICIOS PARA SER CARGADOS!"));
@@ -682,6 +713,43 @@ class ApiController extends CI_Controller{
         else{
             echo json_encode(array("message" => "NO CUENTA CON AUTORIZACIÓN PARA ACCEDER AL RECURSO SOLICITADO"));
         }
+
+     }
+
+     public function EnviarCorreoPedidosCargados($codcliente, $cantidad){
+
+       $email_remitente = $this->ApiModel->GET_Email_cliente($codcliente);
+
+       $config = array(
+         'protocol'     => 'mail',
+         'smtp_host'    => 'mail.GLACORSAC.com',
+         'smtp_port'    =>  25,
+         'smtp_user'    => 'llrvqmax',
+         'smtp_pass'    => 'EwTl0cYB;71;h9',
+         'mailtype'     => 'html',
+         'charset'      => 'utf-8',
+         'newline'      => "\r\n",
+         'smtp_crypto'  => 'ssl',
+         'wordwrap'     => TRUE
+       );
+       $this->email->initialize($config);
+       //mail.GLACORSAC.com
+       //llrvqmax
+       //EwTl0cYB;71;h9
+       $this->email->from($email_remitente);
+       $this->email->to('empresaglac@gmail.com');
+       $this->email->cc('jaas2006@hotmail.com');
+       $this->email->subject('Envio de Pedidos via Webservice');
+       $this->email->message("<h2>Pedidos Enviados</h2>
+       <hr><br>
+       <p>Buen día, estimado glacor!</p>
+       <p>Le informo que se acaba de enviar $cantidad ordenes de servicios para ser entregados en la fecha solicitada, porfavor revisarlo. Gracias!</p>");
+       if($this->email->send()){
+         echo "Se envio el correo";
+       }
+       else{
+         show_error($this->email->print_debugger());
+       }
 
      }
 
@@ -725,7 +793,7 @@ class ApiController extends CI_Controller{
 
      }
 
-     public function RegistrarNuevaDireccionOrigen($codigocliente, $nomcliente, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
+     public function RegistrarNuevaDireccionOrigen($codigocliente, $nomcliente, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
 
        date_default_timezone_set("America/Lima");
        $fecha_creado = date("Y-m-d");
@@ -749,6 +817,7 @@ class ApiController extends CI_Controller{
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
            'SD_Responsable'                     => "Sin responsable",
+           'SD_Telefono1'                       => $telefono,
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
            'SD_Numero'                          => $numerovia,
@@ -771,7 +840,7 @@ class ApiController extends CI_Controller{
 
      }
 
-     public function RegistrarNuevaDireccionDestino($codigocliente, $nomcliente, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
+     public function RegistrarNuevaDireccionDestino($codigocliente, $nomcliente, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
 
        date_default_timezone_set("America/Lima");
        $fecha_creado = date("Y-m-d");
@@ -795,6 +864,7 @@ class ApiController extends CI_Controller{
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
            'SD_Responsable'                     => "Sin responsable",
+           'SD_Telefono1'                       => $telefono,
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
            'SD_Numero'                          => $numerovia,
