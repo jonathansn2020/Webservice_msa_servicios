@@ -53,6 +53,6 @@ $route['default_controller'] = 'ApiController';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 
-$route['Acceso'] = 'ApiController/LoginUsuarios';
-$route['ApiCargarservicios'] = 'ApiController/ApiCargarServicios';
-$route['EstadoPedido/(:any)'] = 'ApiController/ApiEstadoServicio/$1';
+$route['acceso'] = 'ApiController/LoginUsuarios';
+$route['apicargarservicios'] = 'ApiController/ApiCargarServicios';
+$route['estadopedido/(:any)'] = 'ApiController/ApiEstadoServicio/$1';

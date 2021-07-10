@@ -310,7 +310,7 @@ class ApiController extends CI_Controller{
                           $postal_o = $dataorigen1->UBG_Codigo_postal;
 
                           $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
+                          $nombre_cliente, $json_data[$i]['atencion_origen'], $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
 
                           $via_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],'.',-5),4)));
                           $nombrevia_d = strtoupper(rtrim(substr($json_data[$i]['direccion_destino'],strpos($json_data[$i]['direccion_destino'],' ',0))));
@@ -322,7 +322,7 @@ class ApiController extends CI_Controller{
                           $postal_d = $datadestino1->UBG_Codigo_postal;
 
                           $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
+                          $nombre_cliente, $json_data[$i]['atencion_destino'], $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
 
                           $tipo_orden1 = "ECOM";
                           $zona_origen1 = "";
@@ -453,7 +453,7 @@ class ApiController extends CI_Controller{
                           $postal_d = $datadestino1->UBG_Codigo_postal;
 
                           $correlativo_destino = $this->RegistrarNuevaDireccionDestino($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
+                          $nombre_cliente, $json_data[$i]['atencion_destino'], $json_data[$i]['telefono_destino'], $via_d, $nombrevia_d, $numerovia_d, $departamento_d, $provincia_d, $distrito_d, $ubigeo_d, $postal_d);
 
                           $tipo_orden = "ECOM";
                           $zona_origen = "";
@@ -585,7 +585,7 @@ class ApiController extends CI_Controller{
                           $postal_o = $dataorigen->UBG_Codigo_postal;
 
                           $correlativo_origen = $this->RegistrarNuevaDireccionOrigen($json_data[$i]['codigo_cliente'],
-                          $nombre_cliente, $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
+                          $nombre_cliente, $json_data[$i]['atencion_origen'], $json_data[$i]['telefono_origen'], $via_o, $nombrevia_o, $numerovia_o, $departamento_o, $provincia_o, $distrito_o, $ubigeo_o, $postal_o);
 
                           $tipo_orden = "ECOM";
                           $zona_origen = "";
@@ -732,10 +732,7 @@ class ApiController extends CI_Controller{
          'smtp_crypto'  => 'ssl',
          'wordwrap'     => TRUE
        );
-       $this->email->initialize($config);
-       //mail.GLACORSAC.com
-       //llrvqmax
-       //EwTl0cYB;71;h9
+       $this->email->initialize($config);       
        $this->email->from($email_remitente);
        $this->email->to('empresaglac@gmail.com');
        $this->email->cc('jaas2006@hotmail.com');
@@ -745,7 +742,7 @@ class ApiController extends CI_Controller{
        <p>Buen día, estimado glacor!</p>
        <p>Le informo que se acaba de enviar $cantidad ordenes de servicios para ser entregados en la fecha solicitada, porfavor revisarlo. Gracias!</p>");
        if($this->email->send()){
-         echo "Se envio el correo";
+
        }
        else{
          show_error($this->email->print_debugger());
@@ -793,7 +790,7 @@ class ApiController extends CI_Controller{
 
      }
 
-     public function RegistrarNuevaDireccionOrigen($codigocliente, $nomcliente, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
+     public function RegistrarNuevaDireccionOrigen($codigocliente, $nomcliente, $responsable, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
 
        date_default_timezone_set("America/Lima");
        $fecha_creado = date("Y-m-d");
@@ -816,7 +813,7 @@ class ApiController extends CI_Controller{
            'SD_Codigo_sede'                     => $codigo,
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
-           'SD_Responsable'                     => "Sin responsable",
+           'SD_Responsable'                     => $responsable,
            'SD_Telefono1'                       => $telefono,
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
@@ -840,7 +837,7 @@ class ApiController extends CI_Controller{
 
      }
 
-     public function RegistrarNuevaDireccionDestino($codigocliente, $nomcliente, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
+     public function RegistrarNuevaDireccionDestino($codigocliente, $nomcliente, $responsable, $telefono, $via, $nombrevia, $numerovia, $departamento, $provincia, $distrito, $ubigeo, $postal){
 
        date_default_timezone_set("America/Lima");
        $fecha_creado = date("Y-m-d");
@@ -863,7 +860,7 @@ class ApiController extends CI_Controller{
            'SD_Codigo_sede'                     => $codigo,
            'SD_Nombre_sede'                     => "Lugar",
            'SD_Tipo_sede'                       => "12",
-           'SD_Responsable'                     => "Sin responsable",
+           'SD_Responsable'                     => $responsable,
            'SD_Telefono1'                       => $telefono,
            'SD_Tipo_via'                        => $via,
            'SD_Nombre_via'                      => $nombrevia,
